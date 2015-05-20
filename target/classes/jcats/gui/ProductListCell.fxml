@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.control.Label?>
+
+<HBox xmlns:fx="http://javafx.com/fxml" fx:id="hBox">
+<children>
+    <Label  fx:id="ticker" prefWidth="75"/>
+    <Label  fx:id="time" prefWidth="60" alignment="BASELINE_RIGHT"/>
+    <Label  fx:id="bidSize" prefWidth="75" alignment="BASELINE_RIGHT"/>
+    <Label  fx:id="bid" prefWidth="75" alignment="BASELINE_RIGHT"/>
+    <Label  fx:id="ask" prefWidth="75" alignment="BASELINE_RIGHT"/>
+    <Label  fx:id="askSize" prefWidth="75" alignment="BASELINE_RIGHT"/>
+</children>
+</HBox>
