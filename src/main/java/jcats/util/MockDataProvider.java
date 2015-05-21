@@ -7,6 +7,7 @@ import java.util.Random;
 
 import jcats.io.IGenericWriter;
 import jcats.model.Tick;
+import jcats.model.TickType;
 
 public class MockDataProvider implements IDataProvider {
 	private List<String> tickers;
@@ -35,9 +36,13 @@ public class MockDataProvider implements IDataProvider {
 				try {
 					while (active) {
 						String ticker = tickers.get(r.nextInt(tickers.size()));
-						t.initWith(ticker, Instant.now().toEpochMilli(), r.nextBoolean() ? 'Y' : 'Z', r.nextFloat() + 0.5, (r.nextInt(100)+1) * 10000);
+						t.initWith(ticker, 
+								Instant.now().toEpochMilli(),
+								r.nextBoolean() ? r.nextBoolean() ? TickType.BID : TickType.ASK : r.nextBoolean() ? TickType.BID_SIZE : TickType.ASK_SIZE,
+								r.nextFloat() + 0.5, 
+								(r.nextInt(100)+1) * 10000);
 						writer.write(t);
-						Thread.sleep(r.nextInt(100));
+						Thread.sleep(r.nextInt(10));
 					}
 				} catch (IOException e) {
 					active = false;

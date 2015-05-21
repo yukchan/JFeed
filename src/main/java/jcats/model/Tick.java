@@ -9,21 +9,21 @@ import jcats.util.ICopiable;
 public class Tick implements ICopiable<Tick> {
 	
 	public Tick() {
-		initWith(null, 0, '\0', Double.NaN, 0);
+		initWith(null, 0, TickType.NULL, Double.NaN, 0);
 	}
 	
-	public Tick(String ticker, long time, char type, double price, long size) {
+	public Tick(String ticker, long time, TickType type, double price, long size) {
 		initWith(ticker, time, type, price, size);
 	}
 	
 	private String ticker;
 	private LocalDateTime timestamp;
 	private long timeInMillis;
-	private char type; // 'B' - Bid; 'A' - Ask; 'T' - Trade; 'M' - Midpoint; 'Y' - Bid Size; 'Z' - Ask Size; Q - 'Quote'
+	private TickType type;
 	private double price;
 	private long size;
 	
-	public void initWith(String ticker, long timeInMillis, char type, double price, long size) {
+	public void initWith(String ticker, long timeInMillis, TickType type, double price, long size) {
 		this.ticker = ticker;
 		this.timeInMillis = timeInMillis;
 		this.timestamp = null;
@@ -47,7 +47,7 @@ public class Tick implements ICopiable<Tick> {
 		return timestamp;
 	}
 	
-	public char getType() {
+	public TickType getType() {
 		return type;
 	}
 	

@@ -1,54 +1,62 @@
 package jcats.gui;
 
 import java.time.format.DateTimeFormatter;
-import java.util.concurrent.atomic.AtomicReference;
-
-//import org.slf4j.Logger;
-//import org.slf4j.LoggerFactory;
-
-
-
-
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import jcats.model.Tick;
+import jcats.model.TickType;
 import jcats.model.TickFileSystem;
-import jcats.util.RingPool;
+import javafx.beans.property.StringProperty;
 
 public class ProductUpdater implements Runnable {
-//	private static final Logger LOGGER = LoggerFactory.getLogger(ProductUpdater.class);
 	private final DateTimeFormatter timeFormatter = TickFileSystem.getTimeFormatter();
 
-	private final RingPool<Tick> pool;
+	private final Product buffer;
 	private final Product product;
-	private final AtomicReference<Tick> lastTick = new AtomicReference<Tick>();
+	private final AtomicBoolean changed = new AtomicBoolean(false);
+	private final AtomicBoolean bidChanged = new AtomicBoolean(false);
+	private final AtomicBoolean askChanged = new AtomicBoolean(false);
+	private final AtomicBoolean bidSizeChanged = new AtomicBoolean(false);
+	private final AtomicBoolean askSizeChanged = new AtomicBoolean(false);
+	
 	public ProductUpdater(Product p) {
 		product = p;
-		pool = new RingPool<Tick>(2<<5);
+		buffer = new Product(p.getTicker());
 	}
 
 	@Override
 	public void run() {
-		Tick t = lastTick.getAndSet(null);
-		if (t == null) return;
-		
-		product.setTimeString(timeFormatter.format(t.getTimestamp()));
-		if ('B' == t.getType()){
-			product.setBidString(String.format("%f", t.getPrice()));
-		} else if ('A' == t.getType()) {
-			product.setAskString(String.format("%f", t.getPrice()));
-		} else if ('Y' == t.getType()) {
-			product.setBidString(String.format("%f", t.getPrice()));
-			product.setBidSizeString(String.format("%d", t.getSize()));
-		} else if ('Z' == t.getType()) {
-			product.setAskString(String.format("%f", t.getPrice()));
-			product.setAskSizeString(String.format("%d", t.getSize()));
-		} 
-		pool.release(t);
+		if (!changed.getAndSet(false)) return;
+		product.setTimeString(buffer.getTimeString());
+		setChangedProperty(bidChanged, buffer.bidStringProperty(), product.bidStringProperty());
+		setChangedProperty(askChanged, buffer.askStringProperty(), product.askStringProperty());
+		setChangedProperty(bidSizeChanged, buffer.bidSizeStringProperty(), product.bidSizeStringProperty());
+		setChangedProperty(askSizeChanged, buffer.askSizeStringProperty(), product.askSizeStringProperty());
+	}
+	
+	private void setChangedProperty(AtomicBoolean fieldChanged, StringProperty source, StringProperty target) {
+		if (fieldChanged.getAndSet(false)) target.set(source.get());
 	}
 	
 	public void setLastTick(Tick t) {
-		if (!product.getTicker().equals(t.getTicker())) return;
-		lastTick.set(pool.acquire(t));
+		if (!buffer.getTicker().equals(t.getTicker())) return;
+		
+		buffer.setTimeString(timeFormatter.format(t.getTimestamp()));
+		if (TickType.BID.equals(t.getType())){
+			buffer.setBidString(String.format("%f", t.getPrice()));
+			bidChanged.set(true);
+		} else if (TickType.ASK.equals(t.getType())) {
+			buffer.setAskString(String.format("%f", t.getPrice()));
+			askChanged.set(true);
+		} else if (TickType.BID_SIZE.equals(t.getType())) {
+			buffer.setBidSizeString(String.format("%d", t.getSize()));
+			bidSizeChanged.set(true);
+		} else if (TickType.ASK_SIZE.equals(t.getType())) {
+			buffer.setAskSizeString(String.format("%d", t.getSize()));
+			askSizeChanged.set(true);
+		} 
+
+		changed.set(true);
 	}
 
 }

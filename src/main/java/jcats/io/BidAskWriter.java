@@ -3,6 +3,7 @@ package jcats.io;
 import java.io.IOException;
 
 import jcats.model.Tick;
+import jcats.model.TickType;
 
 public class BidAskWriter implements IGenericWriter<Tick> {
 
@@ -13,7 +14,7 @@ public class BidAskWriter implements IGenericWriter<Tick> {
 	@Override
 	public void write(Tick t) throws IOException {
 		if (writer == null) return;
-		if ('B' == t.getType() || 'A' == t.getType()) {
+		if (TickType.BID.equals(t.getType()) || TickType.ASK.equals(t.getType())) {
 			writer.write(t);
 		}
 		
