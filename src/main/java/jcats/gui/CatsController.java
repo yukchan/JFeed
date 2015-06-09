@@ -9,13 +9,13 @@ import java.util.TimeZone;
 
 import jcats.io.BidAskWriter;
 import jcats.io.IGenericWriter;
+import jcats.io.MockDataProvider;
 import jcats.io.MultipleWriter;
 import jcats.io.QueuedWriter;
 import jcats.io.TickDispatcher;
 import jcats.io.TickSeriesWriter;
 import jcats.model.Tick;
 import jcats.model.TickFileSystem;
-import jcats.util.MockDataProvider;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,7 +26,7 @@ public class CatsController {
 	private final List<String> tickers = new ArrayList<String>();
 	private final MultipleWriter<Tick> multiWriter = new MultipleWriter<Tick>(); 
 	private final QueuedWriter<Tick> asyncTickWriter;
-	private boolean active;
+	private volatile boolean active;
 	private final MockDataProvider provider;
 	
 	public CatsController() {
@@ -84,8 +84,7 @@ public class CatsController {
 			LOGGER.info(properties.getProperty("tick.importPath"));
 			return true;
 		} catch (IOException e) {
-			LOGGER.error("Failed to load properties");
-			LOGGER.warn(e.getMessage());
+			LOGGER.error("Failed to load properties", e);
 		}
 		return false;
 	}
@@ -102,8 +101,7 @@ public class CatsController {
 			provider.stop();
 			asyncTickWriter.stop();
 		} catch (InterruptedException e) {
-			LOGGER.error("Failed to stop");
-			LOGGER.warn(e.getMessage());
+			LOGGER.error("Failed to stop", e);
 		}
 	}
 }

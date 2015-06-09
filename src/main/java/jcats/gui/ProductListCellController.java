@@ -39,8 +39,7 @@ public class ProductListCellController extends ListCell<Product>{
 			pane = (Pane)fxmlLoader.load();
 		} catch (IOException e) {
 			e.printStackTrace();
-			LOGGER.error("Failed to load fxml");
-			LOGGER.warn(e.getMessage());
+			LOGGER.error("Failed to load fxml", e);
 			throw new RuntimeException(e);
 		}
 	}

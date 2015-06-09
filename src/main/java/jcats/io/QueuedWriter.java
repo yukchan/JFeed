@@ -70,8 +70,7 @@ public class QueuedWriter<T extends ICopiable<T>> implements Runnable, IGenericW
 				}
 			}
 		} catch (IOException e) {
-			LOGGER.error("Failed to write tick");
-			LOGGER.warn(e.getMessage());
+			LOGGER.error("Failed to process tick from queue", e);
 			active = false;
 		}
 		thread = null;

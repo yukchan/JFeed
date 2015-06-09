@@ -37,8 +37,7 @@ public class ProductListController implements IGenericWriter<Tick> {
 		try {
 			pane = (Pane)fxmlLoader.load();
 		} catch (IOException e) {
-			LOGGER.error("Failed to load fxml");
-			LOGGER.warn(e.getMessage());
+			LOGGER.error("Failed to load fxml", e);
 			throw new RuntimeException(e);
 		}
     }

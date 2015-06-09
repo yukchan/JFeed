@@ -1,19 +1,20 @@
 package jcats.util;
 
+import jcats.util.PaddedAtomicInteger;
+
 public class RingBuffer<T> {
 	private final int capacity;
 	private final int mask;
 	private final T[] buffer;
-	private volatile int head;
-	private volatile int tail;
+	
+	private final PaddedAtomicInteger head = new PaddedAtomicInteger(0);
+	private final PaddedAtomicInteger tail = new PaddedAtomicInteger(0);
 	
 	@SuppressWarnings("unchecked")
 	public RingBuffer(int capacity){
 		this.capacity = getNextPowerOfTwo(capacity);
 		this.mask = this.capacity - 1;
 		this.buffer = (T[]) new Object[this.capacity];
-		this.head = 0;
-		this.tail = 0;
 	}
 	
 	public int getNextPowerOfTwo(int i) {
@@ -22,30 +23,34 @@ public class RingBuffer<T> {
 	}
 	
 	public boolean push(T t) {
-		if (isFull()) return false;
-		buffer[(++tail) & mask] = t;
+		final int currentTail = tail.get();
+		final int minHead = currentTail - capacity;
+		if (minHead >= head.get()) {
+			return false;
+		}
+		
+		buffer[currentTail & mask] = t;
+		tail.lazySet(currentTail + 1);
+
 		return true;
 	}
 	
 	public T poll() {
-		if (isEmpty()) return null;		
-		return buffer[(++head) & mask];
+		final int currentHead = head.get();
+		if (currentHead >= tail.get()) {
+			return null;
+		}
+		
+		final int index = currentHead & mask;
+		final T t = buffer[index];
+		buffer[index] = null;
+		head.lazySet(currentHead + 1);
+		
+		return t;
 	}
 	
 	public int size() {
-		int q = tail - head;
-		return q < 0 ? q + capacity : q;
+		return tail.get() - head.get();
 	}
 	
-	public boolean isEmpty() {
-		return head == tail;
-	}
-	
-	public boolean isFull() {
-		return getNextIndex(tail) == head;
-	}
-	
-	private int getNextIndex(int i) {
-		return (i+1) & mask;
-	}
 }
